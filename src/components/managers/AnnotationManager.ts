@@ -394,36 +394,29 @@ export class Entity {
    * @returns {void}
    */
   private generateHistoryEntryForExport(newAnnotator: string): void {
+    const currentState = this.currentState || 'Candidate'
+    const currentLabel = this.labelClass?.name || ''
+    const latestHistoryEntry = this.latestEntry()
     const newHistoryEntry = new History(
-      this.currentState || 'Candidate', // Use the current state or default to 'Candidate'
-      this.labelClass?.name || '', // Use the label name or an empty string if not set
+      currentState, // Use the current state or default to 'Candidate'
+      currentLabel, // Use the label name or an empty string if not set
       newAnnotator, // The name of the annotator making the change
       History.formatDate(new Date()),
     )
+
     if (
       this.reviewed &&
-      this.latestEntry()?.annotatorName != newAnnotator &&
-      this.latestEntry()?.state == this.currentState &&
-      this.latestEntry()?.label == this.labelClass?.name
+      latestHistoryEntry?.state == currentState &&
+      latestHistoryEntry?.label == currentLabel
     ) {
-      console.log(this.latestEntry()?.label, this.labelClass)
-      this.history.push(
-        new History(
-          this.latestEntry()?.state || '',
-          this.latestEntry()?.label || '',
-          newAnnotator,
-          History.formatDate(new Date()),
-        ),
-      )
-    } else if (
-      (this.currentState == 'Candidate' || this.currentState == 'Suggested') &&
-      this.history.length == 0
-    ) {
+      // Decision already recorded at review time; do not duplicate during export.
+      // Only backfill annotator if it was missing.
+      if (!latestHistoryEntry.annotatorName) {
+        latestHistoryEntry.annotatorName = newAnnotator
+      }
+    } else if ((currentState == 'Candidate' || currentState == 'Suggested') && this.history.length == 0) {
       this.history.push(newHistoryEntry) // If the entity is in 'Candidate' or 'Suggested' state and has no history, add the new history entry
-    } else if (
-      this.latestEntry()?.state != this.currentState ||
-      this.latestEntry()?.label != this.labelClass?.name
-    ) {
+    } else if (latestHistoryEntry?.state != currentState || latestHistoryEntry?.label != currentLabel) {
       this.history.push(newHistoryEntry) // If the current state or label has changed, add the new history entry
     }
   }

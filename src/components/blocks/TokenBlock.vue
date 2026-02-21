@@ -87,6 +87,7 @@ export default {
 
       this.token.currentState = nextState
       this.token.reviewed = true
+      this.token.recordDecisionTimestamp()
     },
     changeLabel() {
       this.versionControlManager.addUndo(this.tokenManager)
@@ -95,12 +96,16 @@ export default {
         this.token.currentState = 'Suggested'
       }
       this.token.labelClass = this.labelManager.currentLabel
+      if (this.currentPage === 'review') {
+        this.token.recordDecisionTimestamp()
+      }
     },
     removeBlock() {
       if (this.currentPage == 'review') {
         this.versionControlManager.addUndo(this.tokenManager)
         this.token.currentState = 'Rejected'
         this.token.reviewed = true
+        this.token.recordDecisionTimestamp()
       } else {
         this.$emit('remove-block', this.token.start)
       }
@@ -110,7 +115,8 @@ export default {
         // Undo all changes made to this block since the last reviewer (initial token manager load)
         this.tokenManager.restoreOriginalBlockState(this.token.start)
       } else {
-        this.token.reviewed = !this.reviewed
+        this.token.reviewed = true
+        this.token.recordDecisionTimestamp()
       }
     },
   },
