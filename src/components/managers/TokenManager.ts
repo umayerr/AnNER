@@ -288,9 +288,11 @@ export class TokenManager {
 
     this.tokens.sort((a, b) => a.start - b.start)
 
-    // Remove individual tokens that are covered by any token block
+    // Remove individual tokens that are covered by any token block  (DELETE)
+    // Remove individual tokens that are covered by active (non-rejected) token blocks.
+    // Rejected blocks are kept for history/review but should not hide plain tokens in the UI.
     const tokenBlocks = this.tokens.filter(
-      token => token instanceof TMTokenBlock,
+      token => token instanceof TMTokenBlock && token.currentState !== 'Rejected',
     ) as TMTokenBlock[]
   
     this.tokens = this.tokens.filter(token => {
