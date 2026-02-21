@@ -178,9 +178,14 @@ export class TMTokenBlock implements TMTokens {
     }
 
     if (latestEntry && latestEntry.state === this.currentState && latestEntry.label === currentLabel) {
-      latestEntry.timestamp = currentTimestamp
-      latestEntry.annotatorName = ''
-      return
+      // Keep each reviewer's agreement as a separate history entry.
+      // Only collapse entries created in the current review session (annotatorName stays empty
+      // until export). Persisted reviewer decisions already have annotatorName filled and must
+      // not be overwritten.
+      if (latestEntry.annotatorName === '') {
+        latestEntry.timestamp = currentTimestamp
+        return
+      }
     }
 
     this.history.push(new History(this.currentState, currentLabel, '', currentTimestamp))
