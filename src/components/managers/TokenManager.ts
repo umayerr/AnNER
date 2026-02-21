@@ -263,12 +263,19 @@ export class TokenManager {
 
     const targetedBlocks: TMTokens[] = this.blocksInRange(selectionStart, selectionEnd)
 
+    if (!targetedBlocks.length) {
+      return
+    }
+
+    const normalizedStart = targetedBlocks[0].start
+    const normalizedEnd = targetedBlocks[targetedBlocks.length - 1].end
+
     // Go ahead and insert the new block now
     // If we overlapped, the overwrites of the blocks params will be passed in
     this.tokens.push(
       new TMTokenBlock(
-        selectionStart,
-        targetedBlocks[targetedBlocks.length - 1].end,
+        normalizedStart,
+        normalizedEnd,
         targetedBlocks as TMToken[],
         labelClass as Label,
         currentState,
@@ -288,7 +295,6 @@ export class TokenManager {
 
     this.tokens.sort((a, b) => a.start - b.start)
 
-    // Remove individual tokens that are covered by any token block  (DELETE)
     // Remove individual tokens that are covered by active (non-rejected) token blocks.
     // Rejected blocks are kept for history/review but should not hide plain tokens in the UI.
     const tokenBlocks = this.tokens.filter(
