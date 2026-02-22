@@ -39,11 +39,27 @@ export default {
     eligibleTokens() {
       const renderList: TMTokens[] = [];
       const processedBlocks = new Set(); // Track processed block IDs
+      const renderedTokenSpans = new Set<string>()
+
+      const pushUniqueToken = (token: TMTokens) => {
+        if (token instanceof TMTokenBlock) {
+          renderList.push(token)
+          return
+        }
+
+        const tokenKey = `${token.start}-${token.end}`
+        if (renderedTokenSpans.has(tokenKey)) {
+          return
+        }
+
+        renderedTokenSpans.add(tokenKey)
+        renderList.push(token)
+      }
       
       for (let i = 0; i < this.tokenManager.tokens.length; i++) {
         const t = this.tokenManager.tokens[i];
         if (t instanceof TMToken) {
-          renderList.push(t);
+           pushUniqueToken(t)
         } else if (t instanceof TMTokenBlock) {
           // Skip if this block has already been processed
           if (processedBlocks.has(t.start)) {
@@ -96,7 +112,7 @@ export default {
                     renderList.push(token)
                   }
                 } else {
-                  renderList.push(token)
+                  pushUniqueToken(token)
                 }
               })
             } else {
