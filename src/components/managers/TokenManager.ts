@@ -160,6 +160,21 @@ export class TMTokenBlock implements TMTokens {
   }
 
   /**
+   * Checks whether this block is a newly suggested span created in the current review session.
+   * Such blocks should be removed entirely when review is toggled off.
+   */
+  public isSessionSuggestedBlock(): boolean {
+    const { currentState, reviewed, history } = this.originalState
+
+    return (
+      currentState === 'Suggested' &&
+      reviewed === true &&
+      history.length === 0 &&
+      this.history.some((entry) => entry.annotatorName === '')
+    )
+  }
+
+  /**
    * Records the timestamp of a review decision at the moment the decision is made.
    * If the latest history entry already represents the same state/label combination,
    * only its timestamp is updated to the latest decision time.
@@ -458,11 +473,20 @@ export class TokenManager {
    * @param {number} start - The start index of the block to restore.
    * @returns {void}
    */
-  public restoreOriginalBlockState(start: number): void {
-    const targetBlock: TMTokenBlock | null = this.getBlockByStart(start)
+  public restoreOriginalBlockState(start: number, blockRef: TMTokenBlock | null = null): void {
+    const targetBlock: TMTokenBlock | null =
+      blockRef && this.tokenBlocks.includes(blockRef) ? blockRef : this.getBlockByStart(start)
 
     // Verify that the block exists before proceeding
     if (targetBlock) {
+      if (targetBlock.isSessionSuggestedBlock()) {
+        this.tokens = this.tokens.filter((token: TMTokens) => token !== targetBlock)
+        this.tokens.push(...targetBlock.tokens)
+        this.tokens.sort((a, b) => a.start - b.start)
+        this.edited++
+        return
+      }
+
       targetBlock.restoreOriginalState()
       this.edited++
     }

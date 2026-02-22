@@ -113,7 +113,7 @@ export default {
     toggleReviewed() {
       if (this.token.reviewed) {
         // Undo all changes made to this block since the last reviewer (initial token manager load)
-        this.tokenManager.restoreOriginalBlockState(this.token.start)
+        this.tokenManager.restoreOriginalBlockState(this.token.start, this.token)
       } else {
         this.token.reviewed = true
         this.token.recordDecisionTimestamp()
