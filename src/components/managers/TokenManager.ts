@@ -288,6 +288,7 @@ export class TokenManager {
     history: History[] = [],
     manualState: boolean = false,
     recordDecisionTime: boolean = false,
+    hideCoveredTokensForRejectedBlocks: boolean = false,
   ): void {
     const selectionStart: number = end < start ? end : start
     const selectionEnd: number = end > start ? end : start
@@ -369,9 +370,12 @@ export class TokenManager {
 
     // Remove individual tokens that are covered by active (non-rejected) token blocks.
     // Rejected blocks are kept for history/review but should not hide plain tokens in the UI.
-    const tokenBlocks = this.tokens.filter(
-      token => token instanceof TMTokenBlock && token.currentState !== 'Rejected',
-    ) as TMTokenBlock[]
+    const tokenBlocks = this.tokens.filter(token => {
+      if (!(token instanceof TMTokenBlock)) {
+        return false
+      }
+      return hideCoveredTokensForRejectedBlocks || token.currentState !== 'Rejected'
+    }) as TMTokenBlock[]
   
     this.tokens = this.tokens.filter(token => {
       if (token instanceof TMTokenBlock) {
@@ -395,7 +399,9 @@ export class TokenManager {
       entity.labelClass,
       entity.currentState || 'Candidate',
       entity.history || [],
-      true // Since we are directly importing the block, do not calculate the state
+      true, // Since we are directly importing the block, do not calculate the state
+      false,
+      true, // Imported blocks (including rejected) should hide their covered plain tokens
     )
     this.edited++
   }
