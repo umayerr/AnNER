@@ -76,10 +76,29 @@ export default {
                 }
               });
 
-              // Ensure the most recent active block has not already been added
-              if (!processedBlocks.has(mostRecentActive.start)) {
-                renderList.push(mostRecentActive);
-              }
+              const remainingTokens = overlapping
+                .filter(block => block.currentState === 'Rejected')
+                .flatMap(block => block.tokens || [])
+                .filter(token =>
+                  !activeBlocks.some(active => token.start >= active.start && token.end <= active.end)
+                )
+                .filter((token, index, arr) =>
+                  arr.findIndex(candidate => candidate.start === token.start && candidate.end === token.end) === index
+                )
+
+              const mergedRenderableTokens = [mostRecentActive, ...remainingTokens].sort(
+                (a, b) => a.start - b.start
+              )
+
+              mergedRenderableTokens.forEach(token => {
+                if (token instanceof TMTokenBlock) {
+                  if (!processedBlocks.has(token.start)) {
+                    renderList.push(token)
+                  }
+                } else {
+                  renderList.push(token)
+                }
+              })
             } else {
               // If all blocks are rejected, still show one of them
               // The one to be shown should be the latest block (by history length, smallest number of entries)
