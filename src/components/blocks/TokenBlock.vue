@@ -110,7 +110,7 @@ export default {
         // Undo all changes made to this block since the last reviewer (initial token manager load)
         this.tokenManager.restoreOriginalBlockState(this.token.start, this.token)
       } else {
-        this.token.reviewed = !this.reviewed
+        this.token.reviewed = !this.token.reviewed
       }
     },
   },

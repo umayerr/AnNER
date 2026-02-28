@@ -150,13 +150,12 @@ export class TMTokenBlock implements TMTokens {
    * Such blocks should be removed entirely when review is toggled off.
    */
   public isSessionSuggestedBlock(): boolean {
-    const { currentState, reviewed, history } = this.originalState
+    const { currentState, history } = this.originalState
 
     return (
       currentState === 'Suggested' &&
-      reviewed === true &&
       history.length === 0 &&
-      this.history.some((entry) => entry.annotatorName === '')
+      this.history.length === 0
     )
   }
 }
@@ -428,8 +427,30 @@ export class TokenManager {
     // Verify that the block exists before proceeding
     if (targetBlock) {
       if (targetBlock.isSessionSuggestedBlock()) {
+        const overlappingBlocks = this.tokenBlocks.filter(
+          (block) =>
+            block !== targetBlock &&
+            block.start < targetBlock.end &&
+            block.end > targetBlock.start,
+        )
+
         this.tokens = this.tokens.filter((token: TMTokens) => token !== targetBlock)
-        this.tokens.push(...targetBlock.tokens)
+
+        for (const token of targetBlock.tokens) {
+          if (
+            !this.tokens.some(
+              (existingToken) =>
+                existingToken.start === token.start && existingToken.end === token.end,
+            )
+          ) {
+            this.tokens.push(token)
+          }
+        }
+
+        for (const block of overlappingBlocks) {
+          block.restoreOriginalState()
+        }
+
         this.tokens.sort((a, b) => a.start - b.start)
         this.edited++
         return
