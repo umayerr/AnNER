@@ -281,8 +281,6 @@ export default {
             this.labelManager.currentLabel,
             'Suggested',
             [],
-            false,
-            true,
           )
         } else {
           // Prompt to user to confirm overlapping blocks in annotation mode
@@ -313,8 +311,6 @@ export default {
           this.labelManager.currentLabel,
           this.currentPage == 'annotate' ? 'Candidate' : 'Suggested',
           [],
-          false,
-          this.currentPage === 'review',
         )
       }
 

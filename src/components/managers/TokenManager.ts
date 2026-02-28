@@ -80,12 +80,7 @@ export class TMTokenBlock implements TMTokens {
   public labelClass: Label
   public reviewed: boolean
   public history: History[]
-  public originalState: {
-    labelClass: Label
-    currentState: string
-    reviewed: boolean
-    history: History[]
-  }
+  public originalState: TMTokenBlock
 
   /**
    * Constructor for TMTokenBlock.
@@ -116,14 +111,7 @@ export class TMTokenBlock implements TMTokens {
     this.currentState = currentState
     this.reviewed = reviewed
     this.history = history
-    this.originalState = {
-      labelClass: this.labelClass,
-      currentState: this.currentState,
-      reviewed: this.reviewed,
-      history: this.history.map(
-        (entry) => new History(entry.state, entry.label, entry.annotatorName, entry.timestamp),
-      ),
-    }
+    this.originalState = { ...this }
   }
 
   /**
@@ -151,12 +139,10 @@ export class TMTokenBlock implements TMTokens {
     // this.start = this.originalState.start
     // this.end = this.originalState.end
     // this.tokens = this.originalState.tokens
+    // this.history = this.originalState.history
     this.labelClass = this.originalState.labelClass
     this.currentState = this.originalState.currentState
     this.reviewed = this.originalState.reviewed
-    this.history = this.originalState.history.map(
-      (entry) => new History(entry.state, entry.label, entry.annotatorName, entry.timestamp),
-    )
   }
 
   /**
@@ -172,38 +158,6 @@ export class TMTokenBlock implements TMTokens {
       history.length === 0 &&
       this.history.some((entry) => entry.annotatorName === '')
     )
-  }
-
-  /**
-   * Records the timestamp of a review decision at the moment the decision is made.
-   * If the latest history entry already represents the same state/label combination,
-   * only its timestamp is updated to the latest decision time.
-   */
-  public recordDecisionTimestamp(): void {
-    const latestEntry = this.history.length > 0 ? this.history[this.history.length - 1] : null
-    const currentLabel = this.labelClass?.name || ''
-    const currentTimestamp = History.formatDate(new Date())
-
-    // Keep only one in-session review decision entry (annotator is filled at export time).
-    if (latestEntry && latestEntry.annotatorName === '') {
-      latestEntry.state = this.currentState
-      latestEntry.label = currentLabel
-      latestEntry.timestamp = currentTimestamp
-      return
-    }
-
-    if (latestEntry && latestEntry.state === this.currentState && latestEntry.label === currentLabel) {
-      // Keep each reviewer's agreement as a separate history entry.
-      // Only collapse entries created in the current review session (annotatorName stays empty
-      // until export). Persisted reviewer decisions already have annotatorName filled and must
-      // not be overwritten.
-      if (latestEntry.annotatorName === '') {
-        latestEntry.timestamp = currentTimestamp
-        return
-      }
-    }
-
-    this.history.push(new History(this.currentState, currentLabel, '', currentTimestamp))
   }
 }
 
@@ -287,7 +241,6 @@ export class TokenManager {
     currentState: string,
     history: History[] = [],
     manualState: boolean = false,
-    recordDecisionTime: boolean = false,
     hideCoveredTokensForRejectedBlocks: boolean = false,
   ): void {
     const selectionStart: number = end < start ? end : start
@@ -301,13 +254,7 @@ export class TokenManager {
 
       // Step 1: Remove overlapping blocks and reintroduce their tokens
       for (const block of overlappedBlocks) {
-        if (!manualState) {
-          block.currentState = 'Rejected' // Set overlapped blocks to Rejected
-          if (recordDecisionTime && block instanceof TMTokenBlock) {
-            block.reviewed = true
-            block.recordDecisionTimestamp()
-          }
-        }
+        if (!manualState) block.currentState = 'Rejected' // Set overlapped blocks to Rejected
         this.tokens = this.tokens.filter((token: TMTokens) => {
           return token.start != block.start
         })
@@ -341,21 +288,17 @@ export class TokenManager {
 
     // Go ahead and insert the new block now
     // If we overlapped, the overwrites of the blocks params will be passed in
-    const newBlock = new TMTokenBlock(
-      normalizedStart,
-      normalizedEnd,
-      targetedBlocks as TMToken[],
-      labelClass as Label,
-      currentState,
-      recordDecisionTime, // reviewed
-      history,
+    this.tokens.push(
+      new TMTokenBlock(
+        normalizedStart,
+        normalizedEnd,
+        targetedBlocks as TMToken[],
+        labelClass as Label,
+        currentState,
+        false, // reviewed
+        history,
+      ),
     )
-
-    if (recordDecisionTime) {
-      newBlock.recordDecisionTimestamp()
-    }
-
-    this.tokens.push(newBlock)
 
     // Reinsert original overlapped blocks as rejected
     if (overlappedBlocks) {
@@ -400,7 +343,6 @@ export class TokenManager {
       entity.currentState || 'Candidate',
       entity.history || [],
       true, // Since we are directly importing the block, do not calculate the state
-      false,
       true, // Imported blocks (including rejected) should hide their covered plain tokens
     )
     this.edited++
