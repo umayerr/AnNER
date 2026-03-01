@@ -241,6 +241,7 @@ export class TokenManager {
     history: History[] = [],
     manualState: boolean = false,
     hideCoveredTokensForRejectedBlocks: boolean = false,
+    reviewed: boolean = false,
   ): void {
     const selectionStart: number = end < start ? end : start
     const selectionEnd: number = end > start ? end : start
@@ -253,7 +254,12 @@ export class TokenManager {
 
       // Step 1: Remove overlapping blocks and reintroduce their tokens
       for (const block of overlappedBlocks) {
-        if (!manualState) block.currentState = 'Rejected' // Set overlapped blocks to Rejected
+        if (!manualState) {
+          block.currentState = 'Rejected' // Set overlapped blocks to Rejected
+          if (reviewed && block instanceof TMTokenBlock) {
+            block.reviewed = true
+          }
+        }
         this.tokens = this.tokens.filter((token: TMTokens) => {
           return token.start != block.start
         })
@@ -294,7 +300,7 @@ export class TokenManager {
         targetedBlocks as TMToken[],
         labelClass as Label,
         currentState,
-        false, // reviewed
+        reviewed,
         history,
       ),
     )
