@@ -212,11 +212,7 @@ export class TokenManager {
     const blocks: TMTokens[] = []
     for (let i = 0; i < this.tokens.length; i++) {
       const token: TMTokens = this.tokens[i]
-      if (
-        (token.start >= start && token.start <= end) ||
-        (token.end >= start && token.end <= end) ||
-        (token.start <= start && token.end >= end)
-      ) {
+      if (token.start < end && token.end > start) {
         blocks.push(token)
       }
     }
@@ -407,11 +403,7 @@ export class TokenManager {
     for (let i = 0; i < this.tokens.length; i++) {
       const currentToken: TMTokens = this.tokens[i]
       if (currentToken instanceof TMTokenBlock) {
-        if (
-          (start >= currentToken.start && start <= currentToken.end) ||
-          (end >= currentToken.start && end <= currentToken.end) ||
-          (currentToken.start >= start && currentToken.end <= end)
-        ) {
+        if (currentToken.start < end && currentToken.end > start) {
           overlappingBlocks.push(currentToken)
         }
       }

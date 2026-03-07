@@ -40,6 +40,12 @@ export default {
       const renderList: TMTokens[] = [];
       const processedBlocks = new Set(); // Track processed block IDs
       const renderedTokenSpans = new Set<string>()
+      const allActiveBlocks = this.tokenManager.tokenBlocks.filter(
+        (block) =>
+          block.currentState === 'Suggested' ||
+          block.currentState === 'Candidate' ||
+          block.currentState === 'Accepted',
+      )
 
       const pushUniqueToken = (token: TMTokens) => {
         if (token instanceof TMTokenBlock) {
@@ -96,7 +102,7 @@ export default {
                 .filter(block => block.currentState === 'Rejected')
                 .flatMap(block => block.tokens || [])
                 .filter(token =>
-                  !activeBlocks.some(active => token.start >= active.start && token.end <= active.end)
+                  !allActiveBlocks.some(active => token.start >= active.start && token.end <= active.end)
                 )
                 .filter((token, index, arr) =>
                   arr.findIndex(candidate => candidate.start === token.start && candidate.end === token.end) === index
@@ -133,7 +139,21 @@ export default {
           }
         }
       }
-      return renderList;
+      return renderList.sort((a, b) => {
+        if (a.start !== b.start) {
+          return a.start - b.start
+        }
+
+        if (a instanceof TMTokenBlock && b instanceof TMToken) {
+          return -1
+        }
+
+        if (a instanceof TMToken && b instanceof TMTokenBlock) {
+          return 1
+        }
+
+        return a.end - b.end
+      });
     },
   },
   watch: {
