@@ -244,6 +244,36 @@ export class TokenManager {
 
     const overlappedBlocks: TMTokens[] | null = this.isOverlapping(selectionStart, selectionEnd)
 
+    // In review mode, if the suggested span already exists as a block with the same boundaries,
+    // reuse that block instead of creating a duplicate span entry.
+    if (!manualState && currentState === 'Suggested' && overlappedBlocks) {
+      const reusableBlock = overlappedBlocks.find(
+        (block): block is TMTokenBlock =>
+          block instanceof TMTokenBlock &&
+          block.start === selectionStart &&
+          block.end === selectionEnd,
+      )
+
+      if (reusableBlock) {
+        for (const block of overlappedBlocks) {
+          if (block === reusableBlock) {
+            continue
+          }
+
+          block.currentState = 'Rejected'
+          if (reviewed && block instanceof TMTokenBlock) {
+            block.reviewed = true
+          }
+        }
+
+        reusableBlock.labelClass = labelClass as Label
+        reusableBlock.currentState = currentState
+        reusableBlock.reviewed = reviewed || reusableBlock.reviewed
+        this.edited++
+        return
+      }
+    }
+    
     // If there are overlapping blocks, temporarily remove them, reintroduce their tokens, add the new block, then reinsert the other blocks
     if (overlappedBlocks) {
       overlappedBlocks.sort((a, b) => a.start - b.start)
