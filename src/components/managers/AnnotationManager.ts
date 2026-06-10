@@ -191,8 +191,9 @@ export class Paragraph {
    * @param {string} paragraphText - The text of the paragraph.
    * @param {REF_EntityJSONFormat} paragraphEntities - An optional array of entities in the paragraph.
    */
-  constructor(paragraphText: string, paragraphEntities?: REF_EntityJSONFormat[]) {
+  constructor(paragraphText: string, paragraphEntities?: REF_EntityJSONFormat[], id: string | null = null) {
     this.text = paragraphText
+    this.id = id
     if (paragraphEntities) {
       this.entities = paragraphEntities.length
         ? paragraphEntities.map((entityJSON) => Entity.fromJSON(entityJSON))
@@ -246,7 +247,7 @@ export class Paragraph {
    * @returns {Paragraph} The Paragraph instance created from the JSON object.
    */
   public static fromJSON(json: REF_ParagraphJSONFormat): Paragraph {
-    return new Paragraph(json[1], json[2].entities)
+    return new Paragraph(json[1], json[2].entities, json[0])
   }
 }
 
