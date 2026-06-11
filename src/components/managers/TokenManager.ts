@@ -68,6 +68,7 @@ export class TMToken implements TMTokens {
  * @property {string} currentState - The current state of the token block.
  * @property {boolean} reviewed - Indicates if the token block has been reviewed.
  * @property {History[]} history - An array of history entries for the token block.
+ * @property {string | null} id - The REF entity ID for imported annotations, or null for new annotations.
  * @property {TMTokenBlock} originalState - The original state of the token block, used for restoring the block's state.
  */
 export class TMTokenBlock implements TMTokens {
@@ -80,6 +81,7 @@ export class TMTokenBlock implements TMTokens {
   public labelClass: Label
   public reviewed: boolean
   public history: History[]
+  public id: string | null
   public originalState: TMTokenBlock
 
   /**
@@ -93,6 +95,7 @@ export class TMTokenBlock implements TMTokens {
    * @param {string} currentState - The current state of the token block.
    * @param {boolean} reviewed - Indicates if the token block has been reviewed, default is false.
    * @param {History[]} history - An array of history entries for the token block, default is an empty array.
+   * @param {string | null} id - The original REF entity ID, if this block came from an imported annotation.
    * @returns {void}
    */
   constructor(
@@ -103,6 +106,7 @@ export class TMTokenBlock implements TMTokens {
     currentState: string,
     reviewed: boolean = false,
     history: History[] = [],
+    id: string | null = null,
   ) {
     this.start = start
     this.end = end
@@ -111,6 +115,7 @@ export class TMTokenBlock implements TMTokens {
     this.currentState = currentState
     this.reviewed = reviewed
     this.history = history
+    this.id = id
     this.originalState = { ...this }
   }
 
@@ -126,6 +131,7 @@ export class TMTokenBlock implements TMTokens {
       this.labelClass,
       this.reviewed, // Indicates if the entity has been reviewed
       this.currentState, // Current state of the entity
+      this.id, // Preserve the imported REF entity ID when exporting
     )
   }
 
@@ -238,6 +244,7 @@ export class TokenManager {
     manualState: boolean = false,
     hideCoveredTokensForRejectedBlocks: boolean = false,
     reviewed: boolean = false,
+    id: string | null = null,
   ): void {
     const selectionStart: number = end < start ? end : start
     const selectionEnd: number = end > start ? end : start
@@ -328,6 +335,7 @@ export class TokenManager {
         currentState,
         reviewed,
         history,
+        id,
       ),
     )
 
@@ -375,6 +383,8 @@ export class TokenManager {
       entity.history || [],
       true, // Since we are directly importing the block, do not calculate the state
       true, // Imported blocks (including rejected) should hide their covered plain tokens
+      false,
+      entity.id,
     )
     this.edited++
   }

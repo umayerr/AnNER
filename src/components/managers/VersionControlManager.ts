@@ -210,7 +210,8 @@ export class VersionControlManager {
           tokens: [...block.tokens],
           labelClass: { ...block.labelClass },
           reviewed: block.reviewed,
-          history: [...block.history]
+          history: [...block.history],
+          id: block.id
         } as TMTokens
       } else if ('type' in token && token.type === 'token') {
         const tmToken = token as TMToken
@@ -278,7 +279,8 @@ export class VersionControlManager {
           serialized.labelClass,
           serialized.currentState,
           serialized.reviewed,
-          serialized.history
+          serialized.history,
+          serialized.id,
         )
       } else if ('type' in token && token.type === 'token') {
         const serialized = token as TMToken & { text: string }

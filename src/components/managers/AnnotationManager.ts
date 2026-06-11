@@ -298,6 +298,7 @@ export class Entity {
    * @param {Label | undefined} labelClass - An optional label class for the entity.
    * @param {boolean} reviewed - Indicates if the entity has been reviewed.
    * @param {string} currentState - The current state of the entity.
+   * @param {string | null} id - The ID of the entity.
    */
   constructor(
     start: number,
@@ -306,7 +307,9 @@ export class Entity {
     labelClass: Label | undefined = undefined,
     reviewed: boolean = false, // Indicates if the entity has been reviewed
     currentState?: string,
+    id: string | null = null,
   ) {
+    this.id = id // Preserve the imported REF entity ID when one exists
     this.start = start // Start index of the entity
     this.end = end // End index of the entity
     this.reviewed = reviewed // Set the reviewed status of the entity
@@ -370,6 +373,10 @@ export class Entity {
       json[1],
       json[2],
       json[3].map((entry) => History.fromJSON(entry)),
+      undefined,
+      false,
+      undefined,
+      json[0],
     )
   }
 
