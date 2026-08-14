@@ -239,6 +239,13 @@ import OpenDialog from '../dialogs/OpenDialog.vue'
 import type { TMTokenBlock } from '../managers/TokenManager'
 import type { REF_FileFormat } from '../types/REFFile'
 
+export function annotationDownloadFileName(sourceFileName: string, annotator: string): string {
+  const extensionIndex = sourceFileName.lastIndexOf('.')
+  const baseName = extensionIndex > 0 ? sourceFileName.slice(0, extensionIndex) : sourceFileName
+
+  return `${baseName}_${annotator}.json`
+}
+
 export default {
   components: { AboutDialog, ExitDialog, OpenDialog },
   name: 'MenuBar',
@@ -371,7 +378,10 @@ export default {
             'href',
             'data:text/plain;charset=utf-8,' + encodeURIComponent(outputJSON),
           )
-          element.setAttribute('download', `${currentAnnotator}-annotations.json`)
+          element.setAttribute(
+            'download',
+            annotationDownloadFileName(this.fileName, currentAnnotator),
+          )
           element.style.display = 'none'
           document.body.appendChild(element)
           element.click()
