@@ -69,6 +69,7 @@ export class TMToken implements TMTokens {
  * @property {boolean} reviewed - Indicates if the token block has been reviewed.
  * @property {History[]} history - An array of history entries for the token block.
  * @property {string | null} id - The REF entity ID for imported annotations, or null for new annotations.
+ * @property {boolean} sessionSuggested - Whether the current user created or relabeled this suggestion since the file was loaded.
  * @property {TMTokenBlock} originalState - The original state of the token block, used for restoring the block's state.
  */
 export class TMTokenBlock implements TMTokens {
@@ -83,6 +84,7 @@ export class TMTokenBlock implements TMTokens {
   public history: History[]
   public id: string | null
   public originalState: TMTokenBlock
+  public sessionSuggested: boolean
 
   /**
    * Constructor for TMTokenBlock.
@@ -107,6 +109,7 @@ export class TMTokenBlock implements TMTokens {
     reviewed: boolean = false,
     history: History[] = [],
     id: string | null = null,
+    sessionSuggested: boolean = false,
   ) {
     this.start = start
     this.end = end
@@ -116,6 +119,7 @@ export class TMTokenBlock implements TMTokens {
     this.reviewed = reviewed
     this.history = history
     this.id = id
+    this.sessionSuggested = sessionSuggested
     this.originalState = { ...this }
   }
 
@@ -149,6 +153,7 @@ export class TMTokenBlock implements TMTokens {
     this.labelClass = this.originalState.labelClass
     this.currentState = this.originalState.currentState
     this.reviewed = this.originalState.reviewed
+    this.sessionSuggested = false
   }
 
   /**
@@ -245,6 +250,7 @@ export class TokenManager {
     hideCoveredTokensForRejectedBlocks: boolean = false,
     reviewed: boolean = false,
     id: string | null = null,
+    sessionSuggested: boolean = false,
   ): void {
     const selectionStart: number = end < start ? end : start
     const selectionEnd: number = end > start ? end : start
@@ -276,6 +282,7 @@ export class TokenManager {
         reusableBlock.labelClass = labelClass as Label
         reusableBlock.currentState = currentState
         reusableBlock.reviewed = reviewed || reusableBlock.reviewed
+        reusableBlock.sessionSuggested = sessionSuggested
         this.edited++
         return
       }
@@ -336,6 +343,7 @@ export class TokenManager {
         reviewed,
         history,
         id,
+        sessionSuggested,
       ),
     )
 

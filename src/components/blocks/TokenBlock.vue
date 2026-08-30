@@ -12,9 +12,9 @@
       <i
         v-if="this.currentPage === 'review'"
         :class="this.states[this.token.currentState].icon"
-        @click="cycleCurrentStatus"
-        :title="[this.token.currentState + ' - Click to cycle status']"
-        style="cursor: pointer; color: grey-9"
+        @click="!this.isProtectedSessionSuggestion && cycleCurrentStatus()"
+        :title="this.isProtectedSessionSuggestion ? 'Suggested in this session' : this.token.currentState + ' - Click to cycle status'"
+        :style="{ cursor: this.isProtectedSessionSuggestion ? 'default' : 'pointer', color: 'grey-9' }"
       ></i>
       {{ this.token.labelClass.name }}
       <!-- Replace label button (double arrows) -->
@@ -29,6 +29,7 @@
       />
       <!-- Delete label button (X) -->
       <q-btn
+        v-if="!this.isProtectedSessionSuggestion"      
         icon="fa fa-times-circle"
         round
         flat
@@ -77,9 +78,13 @@ export default {
   },
   computed: {
     ...mapState(['currentPage', 'labelManager', 'versionControlManager', 'tokenManager']),
+    isProtectedSessionSuggestion() {
+      return this.currentPage === 'review' && this.token.sessionSuggested
+    },
   },
   methods: {
     cycleCurrentStatus() {
+      if (this.isProtectedSessionSuggestion) return
       this.versionControlManager.addUndo(this.tokenManager)
       const nextState = Object.keys(this.states)[
         (this.states[this.token.currentState].numeric + 1) % 3
@@ -93,10 +98,12 @@ export default {
       this.token.reviewed = true
       if (this.currentPage === 'review') {
         this.token.currentState = 'Suggested'
+        this.token.sessionSuggested = true
       }
       this.token.labelClass = this.labelManager.currentLabel
     },
     removeBlock() {
+      if (this.isProtectedSessionSuggestion) return
       if (this.currentPage == 'review') {
         this.versionControlManager.addUndo(this.tokenManager)
         this.token.currentState = 'Rejected'

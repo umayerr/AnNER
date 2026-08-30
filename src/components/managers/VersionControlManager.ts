@@ -211,7 +211,8 @@ export class VersionControlManager {
           labelClass: { ...block.labelClass },
           reviewed: block.reviewed,
           history: [...block.history],
-          id: block.id
+          id: block.id,
+          sessionSuggested: block.sessionSuggested
         } as TMTokens
       } else if ('type' in token && token.type === 'token') {
         const tmToken = token as TMToken
@@ -281,6 +282,7 @@ export class VersionControlManager {
           serialized.reviewed,
           serialized.history,
           serialized.id,
+          serialized.sessionSuggested,
         )
       } else if ('type' in token && token.type === 'token') {
         const serialized = token as TMToken & { text: string }

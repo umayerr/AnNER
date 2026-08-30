@@ -304,6 +304,8 @@ export default {
             false,
             false,
             true,
+            null,
+            true,
           )
         } else {
           // Prompt to user to confirm overlapping blocks in annotation mode
@@ -339,6 +341,8 @@ export default {
           [],
           false,
           false,
+          this.currentPage === 'review',
+          null,
           this.currentPage === 'review',
         )
       }
