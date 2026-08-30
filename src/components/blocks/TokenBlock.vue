@@ -12,7 +12,7 @@
       <i
         v-if="this.currentPage === 'review'"
         :class="this.states[this.token.currentState].icon"
-        @click="!this.isProtectedSessionSuggestion && cycleCurrentStatus()"
+        @click="handleStatusClick"
         :title="this.isProtectedSessionSuggestion ? 'Suggested in this session' : this.token.currentState + ' - Click to cycle status'"
         :style="{ cursor: this.isProtectedSessionSuggestion ? 'default' : 'pointer', color: 'grey-9' }"
       ></i>
@@ -83,6 +83,19 @@ export default {
     },
   },
   methods: {
+    handleStatusClick() {
+      if (this.isProtectedSessionSuggestion) {
+        this.$q.notify({
+          type: 'warning',
+          message:
+            'You cannot review your own suggestion. To discard it, click Undo.',
+          position: 'top',
+        })
+        return
+      }
+
+      this.cycleCurrentStatus()
+    },
     cycleCurrentStatus() {
       if (this.isProtectedSessionSuggestion) return
       this.versionControlManager.addUndo(this.tokenManager)
