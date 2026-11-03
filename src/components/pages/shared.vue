@@ -298,6 +298,25 @@ export default {
 
       // Determine if the selection will overlap with an existing block and add to undo stack accordingly
       const existingBlocks = this.tokenManager.isOverlapping(start, end)
+      // Block a new span if it overlaps a suggestion made in this session.
+      // The user must undo the earlier suggestion before selecting again.
+      if (
+        this.currentPage === 'review' &&
+        existingBlocks?.some(
+          (block) => block instanceof TMTokenBlock && block.sessionSuggested,
+        )
+      ) {
+        this.$q.notify({
+          type: 'warning',
+          message:
+            'This span overlaps your current suggestion. Toggle off the reviewed switch on that suggestion to undo it, then select the correct span.',
+          position: 'top',
+        })
+
+        // Clear the text selection without changing annotations or undo history.
+        selection.removeAllRanges()
+        return
+      }
       if (existingBlocks) {
         // When overlapping in review mode, reject the existing blocks and create a new suggested one
         // In annotation mode, prompt for confirmation
