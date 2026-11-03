@@ -30,6 +30,14 @@ export default {
       'versionControlManager',
       'tokenManagers'
     ]),
+    // Count only the annotation blocks currently shown in the editor.
+    // Plain text tokens and hidden annotation blocks are not counted.
+    // Vue updates this count automatically when visible annotations change.
+    visibleAnnotationCount(): number {
+      return this.eligibleTokens.filter(
+        (token) => token instanceof TMTokenBlock
+      ).length
+    },
     tmEdited() {
       if (this.tokenManager) {
         return this.tokenManager.edited

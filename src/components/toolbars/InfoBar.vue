@@ -1,8 +1,9 @@
 <template>
   <div class="q-pa-md" style="">
     <div style="display: inline-block">
+      <!-- Show the live count received from the editor page. -->
       <span class="q-pl-md">
-        Annotations: <strong>{{ annotationManager.annotations[currentIndex].entities.length }}</strong>
+        Annotations: <strong>{{ annotationCount }}</strong>
       </span>
 
       <span class="q-pl-md">
@@ -41,6 +42,14 @@ import { mapState, mapMutations } from 'vuex'
 
 export default {
   name: 'InfoBar',
+  props: {
+  // Receive the visible annotation count from the parent page.
+  // Show 0 if the parent does not provide a count.
+    annotationCount: {
+      type: Number,
+      default: 0,
+    },
+  },
   computed: {
     ...mapState(['currentIndex', 'annotationManager']),
   },

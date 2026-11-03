@@ -9,7 +9,8 @@
           :class="[t.reviewed ? 'user-active' : 'user-inactive']" @remove-block="onRemoveBlock" />
       </template>
     </div>
-    <info-bar />
+    <!-- Send the current visible annotation count to the info bar. -->
+    <info-bar :annotation-count="visibleAnnotationCount" />
   </div>
 </template>
 <script lang="ts">
