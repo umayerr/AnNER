@@ -1,26 +1,17 @@
 <template>
   <div class="q-pa-md" style="">
     <div style="display: inline-block">
-      <span class="q-pl-md"
-        >{{
-          getWordCount(this.annotationManager.inputSentences[this.currentIndex].text)
-        }}
-        Words</span
-      >
-      <span class="q-pl-md"
-        >{{
-          getCharCount(this.annotationManager.inputSentences[this.currentIndex].text)
-        }}
-        Characters</span
-      >
-      <span class="q-pl-md"
-        >Paragraph {{ this.currentIndex + 1 }}/{{ this.annotationManager.annotations.length }}</span
-      >
-      <span
-        class="q-pl-md"
-        v-if="this.annotationManager.annotations[this.currentIndex].entities.length > 0"
-        >{{ this.annotationManager.annotations[currentIndex].entities.length }} Annotations</span
-      >
+      <span class="q-pl-md">
+        Annotations: <strong>{{ annotationManager.annotations[currentIndex].entities.length }}</strong>
+      </span>
+
+      <span class="q-pl-md">
+        Paragraph: <strong>{{ currentIndex + 1 }}/{{ annotationManager.annotations.length }}</strong>
+      </span>
+
+      <span class="q-pl-md">
+        Paragraph ID: <strong>{{ annotationManager.annotations[currentIndex].id ?? 'None' }}</strong>
+      </span>
     </div>
     <q-btn
       class="q-mx-sm"
